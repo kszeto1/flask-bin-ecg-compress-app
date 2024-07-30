@@ -1,0 +1,50 @@
+{% extends "base.html" %} 
+
+{% block content %}
+<h2>Compress ECG File</h2>
+<form
+  id="compress-form"
+  enctype="multipart/form-data"
+  action="{{ url_for('compress') }}"
+  method="post"
+>
+  <input type="file" name="file" accept=".bin" required />
+  <button type="submit">Compress</button>
+</form>
+{% endblock %} 
+
+{% block scripts %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    let compressedBlob;
+
+    function handleCompress(event) {
+      event.preventDefault();
+      const formData = new FormData(event.target);
+
+      fetch("{{ url_for('compress')}}", {
+        method: "POST",
+        body: formData,
+      })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error("Network response was not ok");
+          }
+          return response.json();
+        })
+        .then((data) => {
+            window.location.href = "{{ url_for('compression_result') }}?" + new URLSearchParams(data).toString();
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+          alert("An error occurred during compression.");
+        });
+    }
+
+    document
+      .getElementById("compress-form")
+      .addEventListener("submit", handleCompress);
+
+  });
+</script>
+{% endblock %}

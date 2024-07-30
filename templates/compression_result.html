@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Compression results</h2>
+<p>Original file size: {{original_size}}</p>
+<p>Compressed file size: {{ compressed_size }}</p>
+<p>Compression ratio: {{ compression_ratio }}</p>
+<a href="{{ url_for('download_compressed')}}" class="button">Download Compressed file</a>
+<a href="{{ url_for('index')}}" class="button">Back to Home</a>
+{% endblock %}
