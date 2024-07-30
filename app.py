@@ -8,6 +8,8 @@ app = Flask(__name__)
 def index():
     return render_template('index.html')
 
+# Implement Huffman coding algorithm
+
 class HuffmanNode:
     def __init__(self, char, freq):
         self.char = char
@@ -15,9 +17,10 @@ class HuffmanNode:
         self.left = None
         self.right = None
 
-    def __lt__(self, other):
+    def __lt__(self, other): #allows comparison between nodes based on frequency
         return self.freq < other.freq
 
+# build Huffman tree based on character frequencies
 def build_huffman_tree(data):
     frequency = Counter(data)
     heap = [HuffmanNode(char, freq) for char, freq in frequency.items()]
@@ -29,32 +32,34 @@ def build_huffman_tree(data):
         merged = HuffmanNode(None, left.freq + right.freq)
         merged.left = left
         merged.right = right
-        heapq.heappush(heap, merged)
+        heapq.heappush(heap, merged) # repeatedly merge two nodes with the lowest frequencies until only one node (root) remains
 
     return heap[0]
 
+# generate Huffman codes for each character
 def build_huffman_codes(root):
     codes = {}
 
-    def traverse(node, code):
+    def traverse(node, code): #traverse Huffman tree and generate codes for each character
         if node.char is not None:
             codes[node.char] = code
             return
-        traverse(node.left, code + "0")
-        traverse(node.right, code + "1")
+        traverse(node.left, code + "0") #left branches are assigned '0'
+        traverse(node.right, code + "1") #right branches are assigned '1'
 
     traverse(root, "")
     return codes
 
+# compress data using Huffman codes
 def compress_data(data, codes):
-    encoded = "".join(codes[char] for char in data)
-    padding = 8 - (len(encoded) % 8)
+    encoded = "".join(codes[char] for char in data) #encode input data using Huffman codes
+    padding = 8 - (len(encoded) % 8) #pad encoded data to multiple of 8 bits
     encoded += "0" * padding
     compressed = bytearray()
     for i in range(0, len(encoded), 8):
         byte = encoded[i:i+8]
         compressed.append(int(byte, 2))
-    return bytes(compressed), padding
+    return bytes(compressed), padding #convert binary string to bytes and return compressed data and padding length
 
 @app.route('/compress', methods=['POST'])
 def compress():
@@ -73,10 +78,11 @@ def compress():
     # Calculate compression ratio
     compression_ratio = f"{(1 - compressed_size / original_size) * 100:.2f}%"
 
-    # Save compressed data and Huffman tree
+    # Save compressed data
     with open('compressed.bin', 'wb') as f:
         f.write(compressed_data)
 
+    # Save Huffman tree
     with open('huffman_tree.txt', 'w') as f:
         f.write(str(padding) + '\n')
         for char, code in codes.items():
